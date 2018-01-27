@@ -57,7 +57,7 @@ export const GameReducer = (
         }
       };
     case getType(gameActions.handleTick):
-      return Engine.handleTick(state, action.payload.timestamp);
+      return Engine.handleTick(gameState, action.payload.timestamp);
     case getType(gameActions.startGame):
       return Engine.startGame(state, action.payload);
     default:

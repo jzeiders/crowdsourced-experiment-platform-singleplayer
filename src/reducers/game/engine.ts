@@ -12,7 +12,8 @@ class Engine {
     inputState: InputStoreState,
     timestamp: Date
   ): GameStoreState {
-    this.dispatch(gameActions.movePlayer(inputState.directionKeys, 0.1));
+    let { directionKeys } = inputState;
+    this.dispatch(gameActions.movePlayer(directionKeys, 0.1));
     return { ...gameState, lastTick: timestamp };
   }
   startGame(state: GameStoreState, startTime: Date): GameStoreState {
