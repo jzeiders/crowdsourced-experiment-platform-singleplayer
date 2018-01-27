@@ -1,6 +1,12 @@
 import * as React from "react";
 import TopView from "../../components/topview";
-import { RootState, GameStoreState, Direction } from "../../types/index";
+import {
+  RootState,
+  GameStoreState,
+  InputStoreState,
+  Direction,
+  DirectionKeys
+} from "../../types/index";
 import { Dispatch, connect } from "react-redux";
 import { GameAction, gameActions } from "../../actions/game";
 import { InputAction, inputActions } from "../../actions/input";
@@ -9,9 +15,11 @@ import * as PropTypes from "prop-types";
 
 type Props = {
   game: GameStoreState;
+  input: InputStoreState;
   setDirectionKey: (direction: Direction, type: boolean) => any;
   startGame: () => any;
   handleTick: (timestamp: Date) => any;
+  movePlayer: (directionKeys: DirectionKeys, moveAmount: number) => any;
 };
 type Context = {
   store: Store<RootState>;
@@ -57,12 +65,17 @@ class GameContainer extends React.Component<Props, {}> {
         return;
     }
   }
+  handleCycle() {
+    let { handleTick, movePlayer, input } = this.props;
+    handleTick(new Date());
+    movePlayer(input.directionKeys, 1);
+  }
   startGame() {
     const { store } = this.context;
-    let { game, handleTick, startGame } = this.props;
+    let { game, startGame } = this.props;
     let ticker = () => {
       if (store.getState().Game.gameStarted) {
-        handleTick(new Date());
+        this.handleCycle();
         window.requestAnimationFrame(ticker);
       }
     };
@@ -79,7 +92,8 @@ class GameContainer extends React.Component<Props, {}> {
 
 const mapStateToProps = (state: RootState) => {
   return {
-    game: state.Game
+    game: state.Game,
+    input: state.Input
   };
 };
 const mapDispatchToProps = (dispatch: Dispatch<GameAction | InputAction>) =>
@@ -87,7 +101,8 @@ const mapDispatchToProps = (dispatch: Dispatch<GameAction | InputAction>) =>
     {
       setDirectionKey: inputActions.setDirectionKey,
       startGame: gameActions.startGame,
-      handleTick: gameActions.handleTick
+      handleTick: gameActions.handleTick,
+      movePlayer: gameActions.movePlayer
     },
     dispatch
   );

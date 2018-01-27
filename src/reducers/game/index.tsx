@@ -1,12 +1,6 @@
-import {
-  GameStoreState,
-  Position,
-  Direction,
-  DirectionKeys
-} from "../../types";
+import { GameStoreState, Position, DirectionKeys } from "../../types";
 import { getType } from "typesafe-actions";
 import { gameActions, GameAction } from "../../actions/game";
-import Engine from "./engine";
 const initialState: GameStoreState = {
   player: {
     position: {
@@ -57,9 +51,16 @@ export const GameReducer = (
         }
       };
     case getType(gameActions.handleTick):
-      return Engine.handleTick(gameState, action.payload.timestamp);
+      return {
+        ...state,
+        lastTick: action.payload.timestamp
+      };
     case getType(gameActions.startGame):
-      return Engine.startGame(state, action.payload);
+      return {
+        ...state,
+        lastTick: action.payload,
+        gameStarted: true
+      };
     default:
       return state;
   }

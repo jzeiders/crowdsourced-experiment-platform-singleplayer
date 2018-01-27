@@ -6,11 +6,16 @@ import "./index.css";
 import reducers from "./reducers";
 import { composeWithDevTools } from "redux-devtools-extension";
 import { Provider } from "react-redux";
-import { createStore } from "redux";
+import { createStore, applyMiddleware } from "redux";
 import { RootState } from "./types/index";
+import ReduxThunk from "redux-thunk";
 
 const configureStore = (initialState?: RootState) => {
-  return createStore(reducers, initialState!, composeWithDevTools());
+  return createStore(
+    reducers,
+    initialState!,
+    composeWithDevTools(applyMiddleware(ReduxThunk))
+  );
 };
 const store = configureStore();
 

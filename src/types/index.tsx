@@ -10,7 +10,7 @@ export type Position = {
   y: number;
 };
 
-export const enum Direction {
+export enum Direction {
   UP = "UP",
   DOWN = "DOWN",
   LEFT = "LEFT",
@@ -23,5 +23,5 @@ export type RootState = {
   Input: InputStoreState;
 };
 export type InputStoreState = {
-  directionKeys: {};
+  directionKeys: DirectionKeys;
 };
