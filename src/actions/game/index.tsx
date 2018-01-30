@@ -1,4 +1,4 @@
-import { DirectionKeys } from "../../types";
+import { DirectionKeys, Level, AIConfig } from "../../types";
 import { createAction } from "typesafe-actions";
 import { $call } from "utility-types";
 
@@ -19,6 +19,20 @@ export const gameActions = {
   startGame: createAction("START_GAME", () => ({
     type: "START_GAME",
     payload: new Date()
+  })),
+  loadLevel: createAction("LOAD_LEVEL", (level: Level) => ({
+    type: "LOAD_LEVEL",
+    payload: level
+  })),
+  createAI: createAction("CREATE_AI", (aiConfig: AIConfig) => ({
+    type: "CREATE_AI",
+    payload: aiConfig
+  })),
+  moveAI: createAction("MOVE_AI", (aiId: number) => ({
+    type: "MOVE_AI",
+    payload: {
+      aiId
+    }
   }))
 };
 

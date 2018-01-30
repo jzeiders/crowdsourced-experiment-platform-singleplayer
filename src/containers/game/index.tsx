@@ -20,6 +20,7 @@ type Props = {
   startGame: () => any;
   handleTick: (timestamp: Date) => any;
   movePlayer: (directionKeys: DirectionKeys, moveAmount: number) => any;
+  moveAI: (aiId: number) => any;
 };
 type Context = {
   store: Store<RootState>;
@@ -65,10 +66,16 @@ class GameContainer extends React.Component<Props, {}> {
         return;
     }
   }
+  moveAI() {
+    this.props.game.ai.map((v, i) => {
+      this.props.moveAI(i);
+    });
+  }
   handleCycle() {
     let { handleTick, movePlayer, input } = this.props;
     handleTick(new Date());
-    movePlayer(input.directionKeys, 1);
+    movePlayer(input.directionKeys, 3);
+    this.moveAI();
   }
   startGame() {
     const { store } = this.context;
@@ -85,8 +92,16 @@ class GameContainer extends React.Component<Props, {}> {
     }
   }
   render() {
-    let { position } = this.props.game.player;
-    return <TopView position={position} />;
+    if (this.props.game.player) {
+      let { position } = this.props.game.player;
+      let { ai } = this.props.game;
+      let barriers = null;
+      if (this.props.game.level) {
+        barriers = this.props.game.level.barriers;
+      }
+      return <TopView position={position} barriers={barriers} ai={ai} />;
+    }
+    return null;
   }
 }
 
@@ -102,7 +117,8 @@ const mapDispatchToProps = (dispatch: Dispatch<GameAction | InputAction>) =>
       setDirectionKey: inputActions.setDirectionKey,
       startGame: gameActions.startGame,
       handleTick: gameActions.handleTick,
-      movePlayer: gameActions.movePlayer
+      movePlayer: gameActions.movePlayer,
+      moveAI: gameActions.moveAI
     },
     dispatch
   );
