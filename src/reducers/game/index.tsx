@@ -29,6 +29,11 @@ const initialState: GameStoreState = {
   level: null,
   ai: []
 };
+const playerCollidesWithAI = (playerPosition: Position, ai: AI): boolean => {
+  let distX = Math.abs(playerPosition.x - ai.position.x);
+  let distY = Math.abs(playerPosition.y - ai.position.y);
+  return distX * distX + distY * distY < PLAYER_RADIUS * PLAYER_RADIUS * 4;
+};
 
 const playerCollidesWithBarrier = (
   barrier: Barrier,
@@ -55,7 +60,11 @@ const playerCollidesWithBarrier = (
   let dy = distY - barrier.height / 2;
   return dx * dx + dy * dy <= PLAYER_RADIUS * PLAYER_RADIUS;
 };
-const collisionDetection = (position: Position, barriers: Barrier[]) => {
+const collisionDetection = (
+  position: Position,
+  barriers: Barrier[],
+  AIs: AI[]
+) => {
   // Wall Check
   if (position.y < PLAYER_RADIUS) {
     return true;
@@ -69,14 +78,15 @@ const collisionDetection = (position: Position, barriers: Barrier[]) => {
   if (position.x > GAME_WIDTH - PLAYER_RADIUS) {
     return true;
   }
-  if (barriers) {
-    if (
-      barriers
-        .map(barrier => playerCollidesWithBarrier(barrier, position))
-        .some(val => val)
-    ) {
-      return true;
-    }
+  if (
+    barriers
+      .map(barrier => playerCollidesWithBarrier(barrier, position))
+      .some(val => val)
+  ) {
+    return true;
+  }
+  if (AIs.map(ai => playerCollidesWithAI(position, ai)).some(val => val)) {
+    return true;
   }
   return false;
 };
@@ -85,7 +95,8 @@ const updatePosition = (
   directionKeys: DirectionKeys,
   moveAmount: number,
   position: Position,
-  level: Level
+  level: Level,
+  AIs: AI[]
 ) => {
   let newPosition = Object.assign({}, position);
   if (directionKeys.UP) {
@@ -100,16 +111,24 @@ const updatePosition = (
   if (directionKeys.RIGHT) {
     newPosition.x += moveAmount;
   }
-  if (level && collisionDetection(newPosition, level.barriers)) {
+  if (level && collisionDetection(newPosition, level.barriers, AIs)) {
     return position;
   }
   return newPosition;
 };
+const collisionDetectionAI = (
+  aiPosition: Position,
+  playerPosition: Position
+) => {
+  let distX = Math.abs(aiPosition.x - playerPosition.x);
+  let distY = Math.abs(aiPosition.y - playerPosition.y);
+  return distX * distX + distY * distY <= PLAYER_RADIUS * PLAYER_RADIUS * 4;
+};
 
-const calculateAIMove = (ai: AI): AI => {
+const calculateAIMove = (ai: AI, playerPosition: Position): AI => {
   const MOVE_AMOUNT = ai.speed;
   const nextPosition = Object.assign({}, ai.path[ai.nextPositionIndex]);
-  let newPosition = ai.position;
+  let newPosition = Object.assign({}, ai.position);
   if (ai.position.x < nextPosition.x) {
     newPosition.x = Math.min(ai.position.x + MOVE_AMOUNT, nextPosition.x);
   }
@@ -121,6 +140,9 @@ const calculateAIMove = (ai: AI): AI => {
   }
   if (ai.position.y > nextPosition.y) {
     newPosition.y = Math.max(ai.position.y - MOVE_AMOUNT, nextPosition.y);
+  }
+  if (collisionDetectionAI(newPosition, playerPosition)) {
+    return ai;
   }
 
   ai.position = newPosition;
@@ -144,7 +166,8 @@ export const GameReducer = (
             action.payload.directionKeys,
             action.payload.moveAmount,
             state.player!.position,
-            state.level!
+            state.level!,
+            state.ai
           )
         }
       };
@@ -173,7 +196,10 @@ export const GameReducer = (
       };
     case getType(gameActions.moveAI):
       let OldAI = state.ai;
-      OldAI[action.payload.aiId] = calculateAIMove(OldAI[action.payload.aiId]);
+      OldAI[action.payload.aiId] = calculateAIMove(
+        OldAI[action.payload.aiId],
+        state.player!.position
+      );
       return {
         ...state
       };

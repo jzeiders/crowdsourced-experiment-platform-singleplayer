@@ -19,7 +19,7 @@ const Level1: Level = {
   ai: [
     {
       speed: 1,
-      path: [{ x: 10, y: 10 }, { x: 40, y: 40 }, { x: 40, y: 10 }]
+      path: [{ x: 400, y: 100 }, { x: 350, y: 90 }]
     }
   ]
 };
